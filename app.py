@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify, render_template
 import pickle
 
 app = Flask(__name__)
-# model = pickle.load(open('model.pkl', 'rb'))
+
 class DynamicPricingModel:
     # parameters
     prices = [1.99, 2.49, 2.99, 3.49, 3.99, 4.49]
@@ -54,17 +54,6 @@ def predict():
 
     return render_template('index.html', prediction_text='Optimal price $ {}'.format(optimal_price))
 
-
-# Used for POST request
-
-# @app.route('/results',methods=['POST'])
-# def results():
-
-#     data = request.get_json(force=True)
-#     prediction = model.predict([np.array(list(data.values()))])
-
-#     output = prediction[0]
-#     return jsonify(output)
 
 
 if __name__ == "__main__":

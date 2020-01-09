@@ -1,31 +1,45 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
 import pickle
 
-dataset = pd.read_csv('sales.csv')
+# T = 100
 
-dataset['rate'].fillna(0, inplace=True)
+class DynamicPricingModel:
+    # parameters
+    prices = [1.99, 2.49, 2.99, 3.49, 3.99, 4.49]
+    alpha_0 = 30.00     # parameter of the prior distribution
+    beta_0 = 1.00       # parameter of the prior distribution
+    p_theta = []
+    price_index_offered = 0
 
-dataset['sales_in_first_month'].fillna(dataset['sales_in_first_month'].mean(), inplace=True)
+    def __init__(self):
+        for p in self.prices:
+            self.p_theta.append({'price': p, 'alpha': self.alpha_0, 'beta': self.beta_0})
+    
+    def sample_demands_from_model(self, p_theta):
+        return list(map(lambda v: 
+                np.random.gamma(v['alpha'], 1/v['beta']), self.p_theta))
+    
+    def optimal_price(self):
+        demands = self.sample_demands_from_model(self.p_theta)
 
-X = dataset.iloc[:, :3]
+        print("demands:", ["%.2f"%demand for demand in demands])
 
-def convert_to_int(word):
-    word_dict = {'one':1, 'two':2, 'three':3, 'four':4, 'five':5, 'six':6, 'seven':7, 'eight':8,
-                'nine':9, 'ten':10, 'eleven':11, 'twelve':12, 'zero':0, 0: 0}
-    return word_dict[word]
+        price_index = np.argmax(np.multiply(self.prices, demands))
+        self.price_index_offered = price_index
+        return price_index, self.prices[price_index]
 
-X['rate'] = X['rate'].apply(lambda x : convert_to_int(x))
+    def update(self, demand_t):
+        demand_t = int(demand_t)
+        v = self.p_theta[self.price_index_offered]
+        v['alpha'] = v['alpha'] + demand_t
+        v['beta'] = v['beta'] + 1
 
-y = dataset.iloc[:, -1]
+model = DynamicPricingModel()
 
-from sklearn.linear_model import LinearRegression
-regressor = LinearRegression()
+pickle.dump(model, open('model.pkl','wb'))
 
-regressor.fit(X, y)
-
-pickle.dump(regressor, open('model.pkl','wb'))
-
-model = pickle.load(open('model.pkl','rb'))
-print(model.predict([[4, 300, 500]]))
+# for t in range(0, T):
+#     print("Iteration", t)
+#     optimal_price_index, optimal_price = model.optimal_price()
+#     print("optimal price: ", optimal_price)
+#     model.update(input("Demand of "  + str(optimal_price) + ": "))
