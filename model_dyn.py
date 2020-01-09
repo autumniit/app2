@@ -1,6 +1,7 @@
 import numpy as np
+import pickle
 
-T = 100
+# T = 100
 
 class DynamicPricingModel:
     # parameters
@@ -35,8 +36,10 @@ class DynamicPricingModel:
 
 model = DynamicPricingModel()
 
-for t in range(0, T):
-    print("Iteration", t)
-    optimal_price_index, optimal_price = model.optimal_price()
-    print("optimal price: ", optimal_price)
-    model.update(input("Demand of "  + str(optimal_price) + ": "))
+pickle.dump(model, open('model.pkl','wb'))
+
+# for t in range(0, T):
+#     print("Iteration", t)
+#     optimal_price_index, optimal_price = model.optimal_price()
+#     print("optimal price: ", optimal_price)
+#     model.update(input("Demand of "  + str(optimal_price) + ": "))
